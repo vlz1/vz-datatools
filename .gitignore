@@ -1,3 +1,8 @@
+built/
+sources/**/
+recipes/**/
+*.json
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
