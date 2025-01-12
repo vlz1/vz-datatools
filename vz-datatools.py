@@ -1,11 +1,13 @@
 import sys
 import os
 import os.path as path
+import importlib
 from argparse import ArgumentParser
 from pathlib import Path
 
 main_directory = path.dirname(path.realpath(__file__))
-sys.path.append(path.join(main_directory, "tools"))
+tools_directory = path.join(main_directory, "tools")
+sys.path.append(tools_directory)
 sources_directory = path.join(main_directory, "sources")
 recipes_directory = path.join(main_directory, "recipes")
 output_directory = path.join(main_directory, "built")
@@ -34,6 +36,11 @@ def list_recipes():
             continue
         print(f"\t{recipe_json.name[:-5]}")
 
+def load_operations():
+    paths = Path(path.join(tools_directory, "operations")).glob("*.py")
+    for operation_script in paths:
+        importlib.import_module(f"tools.operations.{operation_script.name[:-3]}")
+
 match action:
     case "build":
         build_parser = ArgumentParser(
@@ -43,6 +50,7 @@ match action:
         build_parser.add_argument("recipe", help="Data recipe to build.")
         args = build_parser.parse_args(sys.argv[2:])
         from tools import *
+        load_operations()
         builder = RecipeBuilder(sources_directory, recipes_directory, output_directory)
         try:
             builder.build(args.recipe)
@@ -57,6 +65,7 @@ match action:
 
     case "list-operations":
         from tools import *
+        load_operations()
         print("Available operations:")
         for name in Operation.registered_operations.keys():
             print(f"\t{name}")
